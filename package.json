@@ -12,6 +12,7 @@
     "start": "eve start",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:integration": "EVE_EVAL=1 npx eve eval",
     "typecheck": "tsc"
   },
   "dependencies": {

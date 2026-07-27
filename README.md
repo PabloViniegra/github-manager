@@ -110,14 +110,17 @@ For direct provider access, install the provider's AI SDK package and pass a `La
 ## Development
 
 ```bash
-npm run typecheck   # tsc, no emit
-npm test            # vitest run, exercises the GitHub client and key tool projections
-npm run test:watch  # vitest in watch mode
-EVE_EVAL=1 npx eve eval          # integration tests (mock model, no API cost)
-EVE_EVAL=1 npx eve eval --strict # same, but soft threshold misses fail the run
-npm run build       # eve build, compiles agent into .eve/
-npm run start       # serve the built output
-npx eve info        # list the discovered surface and diagnostics
+npm run typecheck          # tsc, no emit
+npm test                   # vitest run, exercises the GitHub client and key tool projections
+npm run test:watch         # vitest in watch mode
+npm run test:integration   # eve eval with mock model, no API cost
+npm run build              # eve build, compiles agent into .eve/
+npm run start              # serve the built output
+npx eve info               # list the discovered surface and diagnostics
+
+npm run test:integration -- --strict     # soft threshold misses also fail
+npm run test:integration -- --list       # discover evals without running them
+npm run test:integration -- greeting-no-tools  # one specific eval
 ```
 
 Tests cover two layers:
