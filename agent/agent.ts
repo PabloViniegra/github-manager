@@ -36,7 +36,7 @@ const model = isEval
         }
       return { text: "No estoy seguro de qué hacer con eso." };
     })
-  : "poolside/laguna-s-2.1-free";
+  : "inclusionai/ling-3.0-flash-free";
 
 export default defineAgent({
   model,
