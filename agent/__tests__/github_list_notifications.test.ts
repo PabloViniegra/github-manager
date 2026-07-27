@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import listNotifications from "./github_list_notifications.js";
+import listNotifications from "../tools/github_list_notifications.js";
 
 const ORIGINAL_FETCH = globalThis.fetch;
 const ORIGINAL_TOKEN = process.env.GITHUB_TOKEN;

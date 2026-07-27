@@ -110,15 +110,28 @@ For direct provider access, install the provider's AI SDK package and pass a `La
 ## Development
 
 ```bash
-npm run typecheck   # tsc, no emit
-npm test            # vitest run, exercises the GitHub client and key tool projections
-npm run test:watch  # vitest in watch mode
-npm run build       # eve build, compiles agent into .eve/
-npm run start       # serve the built output
-npx eve info        # list the discovered surface and diagnostics
+npm run typecheck          # tsc, no emit
+npm test                   # vitest run, exercises the GitHub client and key tool projections
+npm run test:watch         # vitest in watch mode
+npm run test:integration   # eve eval with mock model, no API cost
+npm run build              # eve build, compiles agent into .eve/
+npm run start              # serve the built output
+npx eve info               # list the discovered surface and diagnostics
+
+npm run test:integration -- --strict     # soft threshold misses also fail
+npm run test:integration -- --list       # discover evals without running them
+npm run test:integration -- greeting-no-tools  # one specific eval
 ```
 
-Tests cover the deterministic parts of the agent: the shared GitHub client (auth header construction, error handling, pagination, 204 handling) and the non-trivial tool projections (issues PR filter, notifications subject extraction). End-to-end agent behavior — model choices, tool-call selection, HITL flow — is not unit-tested; bring it up in a follow-up if you want `eve eval`-based integration coverage (it requires a fixture agent with `mockModel`).
+Tests cover two layers:
+
+- **Unit (vitest, `agent/__tests__/`)** — the shared GitHub client (auth header construction, error handling, pagination, 204 handling) and the non-trivial tool projections (issues PR filter, notifications subject extraction). No network.
+- **Integration (`evals/`)** — three `eve eval` cases that drive the agent end-to-end through a scripted `mockModel` (activated by `EVE_EVAL=1`):
+  - `greeting-no-tools` — a greeting does not trigger any tool call.
+  - `write-tool-parks-for-approval` — a create-issue request calls the write tool, which then parks for human approval. Runs without `GITHUB_TOKEN` because the tool never executes.
+  - `list-repos-uses-read-tool` — a list-repos request calls `github_list_my_repos`. Skipped when `GITHUB_TOKEN` is not set; with a valid token it exercises the full read path including pagination.
+
+The unit test files live under `agent/__tests__/` (not `agent/tools/`) because the tool-slot discovery rejects any filename containing a dot, which `*.test.ts` has.
 
 ## License
 

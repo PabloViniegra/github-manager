@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import listIssues from "./github_list_issues.js";
+import listIssues from "../tools/github_list_issues.js";
 
 const ORIGINAL_FETCH = globalThis.fetch;
 const ORIGINAL_TOKEN = process.env.GITHUB_TOKEN;

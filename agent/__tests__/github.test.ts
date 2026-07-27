@@ -8,7 +8,7 @@ import {
   post,
   put,
   requireToken,
-} from "./github.js";
+} from "../lib/github.js";
 
 const ORIGINAL_FETCH = globalThis.fetch;
 const ORIGINAL_TOKEN = process.env.GITHUB_TOKEN;
