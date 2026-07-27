@@ -36,7 +36,7 @@ const model = isEval
         }
       return { text: "No estoy seguro de qué hacer con eso." };
     })
-  : "anthropic/claude-3-haiku";
+  : "google/gemini-3.5-flash-lite";
 
 export default defineAgent({
   model,
