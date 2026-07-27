@@ -10,6 +10,8 @@
     "build": "eve build",
     "dev": "eve dev",
     "start": "eve start",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc"
   },
   "dependencies": {
@@ -20,7 +22,8 @@
   },
   "devDependencies": {
     "@types/node": "24.x",
-    "typescript": "7.0.2"
+    "typescript": "7.0.2",
+    "vitest": "^2.1.9"
   },
   "overrides": {
     "ai": "^7.0.34"
@@ -28,5 +31,4 @@
   "engines": {
     "node": "24.x"
   }
-
 }
