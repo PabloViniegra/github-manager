@@ -36,7 +36,7 @@ const model = isEval
         }
       return { text: "No estoy seguro de qué hacer con eso." };
     })
-  : "google/gemini-3.5-flash-lite";
+  : "poolside/laguna-s-2.1-free";
 
 export default defineAgent({
   model,
