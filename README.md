@@ -9,7 +9,7 @@ An autonomous [eve](https://eve.dev) agent that operates your GitHub account thr
   <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-24.x-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js 24"/></a>
   <a href="https://eve.dev"><img src="https://img.shields.io/badge/eve-0.27-000000?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0NSIgZmlsbD0iIzAwMCIvPjwvc3ZnPg==&logoColor=white" alt="eve framework"/></a>
   <a href="https://vercel.com/docs/ai-gateway"><img src="https://img.shields.io/badge/AI_Gateway-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel AI Gateway"/></a>
-  <a href="https://www.anthropic.com/"><img src="https://img.shields.io/badge/Claude-Sonnet_5-D97757?style=for-the-badge&logo=anthropic&logoColor=white" alt="Anthropic Claude Sonnet 5"/></a>
+  <a href="https://www.anthropic.com/"><img src="https://img.shields.io/badge/Claude-3_Haiku-D97757?style=for-the-badge&logo=anthropic&logoColor=white" alt="Anthropic Claude 3 Haiku"/></a>
   <a href="https://zod.dev/"><img src="https://img.shields.io/badge/Zod-4-3068B7?style=for-the-badge&logo=zod&logoColor=white" alt="Zod"/></a>
   <a href="https://github.com/"><img src="https://img.shields.io/badge/GitHub_API-v3-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub REST API"/></a>
 </p>
@@ -24,7 +24,7 @@ An autonomous [eve](https://eve.dev) agent that operates your GitHub account thr
 
 GitHub Manager is a single-purpose agent built on [eve](https://eve.dev), Vercel's filesystem-first framework for durable agents. The app is a thin TypeScript layer on top of a shared GitHub REST client (`agent/lib/github.ts`) and 18 typed tools (`agent/tools/github_*.ts`) that cover the surface area a maintainer needs day to day: account, repositories, issues, pull requests, search, and notifications.
 
-The default model is `anthropic/claude-sonnet-5` and is reached through the Vercel AI Gateway, so swapping providers or models is a one-line change in `agent/agent.ts`.
+The default model is `anthropic/claude-3-haiku` and is reached through the Vercel AI Gateway, so swapping providers or models is a one-line change in `agent/agent.ts`.
 
 ## Features
 
@@ -42,7 +42,7 @@ Every tool is a typed `defineTool` from `eve/tools` with a Zod `inputSchema`. Re
 
 ```
 agent/
-├── agent.ts                # defineAgent({ model: "anthropic/claude-sonnet-5" })
+├── agent.ts                # defineAgent({ model: "anthropic/claude-3-haiku" })
 ├── instructions.md         # System prompt: identity, principles, style
 ├── channels/eve.ts         # Default HTTP channel
 ├── lib/github.ts           # Shared fetch client (Bearer auth, paginator, typed errors)
@@ -101,7 +101,7 @@ The model is a single field in `agent/agent.ts`. To use a different gateway-rout
 import { defineAgent } from "eve";
 
 export default defineAgent({
-  model: "anthropic/claude-sonnet-5", // or any gateway id
+  model: "anthropic/claude-3-haiku", // or any gateway id
 });
 ```
 
