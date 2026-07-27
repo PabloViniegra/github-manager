@@ -22,7 +22,7 @@ An autonomous [eve](https://eve.dev) agent that operates your GitHub account thr
 
 ## Overview
 
-GitHub Manager is a single-purpose agent built on [eve](https://eve.dev), Vercel's filesystem-first framework for durable agents. The app is a thin TypeScript layer on top of a shared GitHub REST client (`agent/lib/github.ts`) and 18 typed tools (`agent/tools/github_*.ts`) that cover the surface area a maintainer needs day to day: account, repositories, issues, pull requests, search, and notifications.
+GitHub Manager is a single-purpose agent built on [eve](https://eve.dev), Vercel's filesystem-first framework for durable agents. The app is a thin TypeScript layer on top of a shared GitHub REST client (`agent/lib/github.ts`) and 25 typed tools (`agent/tools/github_*.ts`) that cover the surface area a maintainer needs day to day: account, repositories, issues, pull requests, labels, search, reactions, and notifications.
 
 The default model is `anthropic/claude-3-haiku` and is reached through the Vercel AI Gateway, so swapping providers or models is a one-line change in `agent/agent.ts`.
 
@@ -32,9 +32,11 @@ The default model is `anthropic/claude-3-haiku` and is reached through the Verce
 | --- | --- |
 | Account & repos | `github_get_my_profile`, `github_list_my_repos`, `github_get_repo`, `github_create_repo`, `github_delete_repo` |
 | Issues | `github_list_issues`, `github_get_issue`, `github_create_issue`, `github_update_issue`, `github_add_issue_comment` |
-| Pull requests | `github_list_pull_requests`, `github_get_pull_request`, `github_create_pull_request`, `github_merge_pull_request` |
+| Pull requests | `github_list_pull_requests`, `github_get_pull_request`, `github_create_pull_request`, `github_update_pull_request`, `github_merge_pull_request`, `github_add_pull_request_review_comment`, `github_get_pull_request_files` |
+| Labels | `github_list_labels`, `github_create_label` |
 | Search | `github_search_repositories`, `github_search_code`, `github_search_issues` |
-| Inbox | `github_list_notifications` |
+| Reactions | `github_add_reaction` |
+| Inbox | `github_list_notifications`, `github_mark_notification_read` |
 
 Every tool is a typed `defineTool` from `eve/tools` with a Zod `inputSchema`. Read tools are unrestricted; write tools (create, update, merge, comment, delete) gate on `always()` from `eve/tools/approval`, which pauses the durable session for human approval before any side effect runs.
 

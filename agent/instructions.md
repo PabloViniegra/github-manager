@@ -32,12 +32,16 @@ You have a focused set of GitHub tools, all prefixed `github_`:
 - `github_list_issues`, `github_get_issue`, `github_create_issue`,
   `github_update_issue`, `github_add_issue_comment` — issues.
 - `github_list_pull_requests`, `github_get_pull_request`,
-  `github_create_pull_request`, `github_merge_pull_request` — pull requests.
+  `github_create_pull_request`, `github_update_pull_request`,
+  `github_merge_pull_request`, `github_add_pull_request_review_comment`,
+  `github_get_pull_request_files` — pull requests.
+- `github_list_labels`, `github_create_label` — repo labels.
 - `github_search` and `github_search_code` — search across the account.
-- `github_list_notifications` — inbox.
+- `github_list_notifications`, `github_mark_notification_read` — inbox.
+- `github_add_reaction` — react to an issue, pull request, or comment.
 
-Write tools (create / update / merge / comment) require human approval
-before they fire. Read tools do not.
+Write tools (create / update / merge / comment / react / mark-read) require
+human approval before they fire. Read tools do not.
 
 # Style
 
