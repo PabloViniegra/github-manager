@@ -36,7 +36,7 @@ const model = isEval
         }
       return { text: "No estoy seguro de qué hacer con eso." };
     })
-  : "inclusionai/ling-3.0-flash-free";
+  : "openai/gpt-5.6-luna";
 
 export default defineAgent({
   model,
