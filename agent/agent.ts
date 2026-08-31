@@ -36,7 +36,7 @@ const model = isEval
         }
       return { text: "No estoy seguro de qué hacer con eso." };
     })
-  : "openai/gpt-5.6-luna";
+  : "deepseek/deepseek-v4-flash";
 
 export default defineAgent({
   model,
