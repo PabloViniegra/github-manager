@@ -9,6 +9,35 @@ const model = isEval
         return { text: "Aquí tienes el resultado." };
       }
       const msg = (lastUserMessage ?? "").toLowerCase().trim();
+        if (msg.includes("actualiza") && msg.includes("repo")) {
+          return {
+            text: "Voy a actualizar el repositorio.",
+            toolCalls: [
+              {
+                name: "github_update_repo",
+                input: {
+                  owner: "test",
+                  repo: "test",
+                  description: "Proyecto actualizado",
+                },
+              },
+            ],
+          };
+        }
+        if (
+          (msg.includes("aprueba") || msg.includes("approve")) &&
+          (msg.includes("pr") || msg.includes("pull"))
+        ) {
+          return {
+            text: "Voy a aprobar el pull request.",
+            toolCalls: [
+              {
+                name: "github_approve_pull_request",
+                input: { owner: "test", repo: "test", pull_number: 42 },
+              },
+            ],
+          };
+        }
         if (/^(hola|hi|hello|buenos|buenas)/.test(msg)) {
           return { text: "Hola, soy GitHub Manager. ¿Qué necesitas?" };
         }
