@@ -22,9 +22,9 @@ An autonomous [eve](https://eve.dev) agent that operates your GitHub account thr
 
 ## Overview
 
-GitHub Manager is a single-purpose agent built on [eve](https://eve.dev), Vercel's filesystem-first framework for durable agents. The app is a thin TypeScript layer on top of a shared GitHub REST client (`agent/lib/github.ts`) and 27 typed tools (`agent/tools/github_*.ts`) that cover the surface area a maintainer needs day to day: account, repositories, issues, pull requests, labels, search, reactions, and notifications.
+GitHub Manager is a single-purpose agent built on [eve](https://eve.dev), Vercel's filesystem-first framework for durable agents. The app is a thin TypeScript layer on top of a shared GitHub REST client (`agent/lib/github.ts`) and 35 typed tools (`agent/tools/github_*.ts`) covering account, repositories, issues, pull requests, labels, search, reactions, notifications, Actions, and billing evidence.
 
-The default model is `openai/gpt-5.6-luna` and is reached through the Vercel AI Gateway, so swapping providers or models is a one-line change in `agent/agent.ts`.
+The default model is `openai/gpt-6-luna` and is reached through the Vercel AI Gateway, so swapping providers or models is a one-line change in `agent/agent.ts`.
 
 ## Features
 
@@ -37,6 +37,8 @@ The default model is `openai/gpt-5.6-luna` and is reached through the Vercel AI 
 | Search | `github_search_repositories`, `github_search_code`, `github_search_issues` |
 | Reactions | `github_add_reaction` |
 | Inbox | `github_list_notifications`, `github_mark_notification_read` |
+| Actions | `github_list_workflow_runs`, `github_get_workflow_run`, `github_list_workflow_run_jobs`, `github_list_check_runs`, `github_list_check_annotations`, `github_rerun_workflow` |
+| Billing (read-only) | `github_get_actions_usage`, `github_get_actions_budgets` |
 
 Every tool is a typed `defineTool` from `eve/tools` with a Zod `inputSchema`. Read tools are unrestricted; write tools (create, update, approve, merge, comment, delete) gate on `always()` from `eve/tools/approval`, which pauses the durable session for human approval before any side effect runs.
 
@@ -44,11 +46,11 @@ Every tool is a typed `defineTool` from `eve/tools` with a Zod `inputSchema`. Re
 
 ```
 agent/
-├── agent.ts                # defineAgent({ model: "openai/gpt-5.6-luna" })
+├── agent.ts                # defineAgent({ model: "openai/gpt-6-luna" })
 ├── instructions.md         # System prompt: identity, principles, style
 ├── channels/eve.ts         # Default HTTP channel
 ├── lib/github.ts           # Shared fetch client (Bearer auth, paginator, typed errors)
-└── tools/github_*.ts       # 27 typed tools, one per file (filename == tool name)
+└── tools/github_*.ts       # 35 typed tools, one per file (filename == tool name)
 ```
 
 The default eve harness provides file, shell, web, and delegation tools out of the box; this app keeps that surface and adds the GitHub-specific tools on top. Tools run in the app runtime with full access to `process.env`, not inside the sandbox.
@@ -95,6 +97,16 @@ curl http://127.0.0.1:2000/eve/v1/session/<sessionId>/stream
 - `agent/lib/github.ts` surfaces GitHub's HTTP status and response body on failure so the model can react, but it does not catch and swallow errors. Rate-limit (403) and 5xx responses are surfaced to the caller.
 - The dev channel uses `placeholderAuth`. Do not deploy without replacing it with a real auth provider — see `agent/channels/eve.ts` and the eve [auth guide](https://eve.dev/docs).
 
+## Actions recovery and billing access
+
+- The agent can inspect runs, latest jobs, check suites and failure annotations across accessible public/private repositories. Run, job, check, annotation and budget listings expose explicit pagination; filtered run searches have GitHub's 1,000-result limit.
+- `github_rerun_workflow` requires approval for each run. It defaults to failed jobs and their dependents; `all` retries the entire original run, including startup failures with no jobs. Reruns reuse the original commit/ref and can repeat deployments or consume paid usage. They are not new `workflow_dispatch` events. GitHub normally allows reruns for 30 days.
+- Fine-grained tokens need repository **Actions: read** to inspect runs/jobs, **Checks: read** for checks/annotations, and **Actions: write** to rerun. Select every intended private repository. Classic tokens need `repo` for private repository access and reruns; the `workflow` scope is for workflow-file changes, not a substitute for these permissions. Organization SSO/policies may also restrict access.
+- Billing access is separate from repository access. Usage uses `/users/{username}/settings/billing/usage/summary` or `/organizations/{org}/settings/billing/usage/summary`, filtered to Actions. Organization usage requires an organization administrator; budgets require an organization admin or billing manager and the endpoint's token permissions (Administration read for fine-grained organization budgets). See GitHub's [usage](https://docs.github.com/en/rest/billing/usage) and [budgets](https://docs.github.com/en/rest/billing/budgets) documentation for token eligibility.
+- Organization budget listings support pagination; supplying `budget_id` reads details including current consumption. Alert recipients are not returned to the model. There is no equivalent personal-account budget endpoint in this integration.
+- Usage is not a remaining-credit balance, proof of renewal, or payment-health check. `quota_available` is deliberately `null`. Missing permissions (403/404), zero usage or no budgets never imply available quota. If a request is conditional on available credit and the API cannot establish it, the agent asks for billing confirmation instead of spending quota on a trial rerun. These tools never change budgets or enable paid spending.
+- Configure token permissions in GitHub and update the runtime's `GITHUB_TOKEN` securely, then restart/redeploy the app to discover the new tools. Adding tools does not grant the existing token additional permissions.
+
 ## Switching models
 
 The model is a single field in `agent/agent.ts`. To use a different gateway-routed model:
@@ -103,7 +115,7 @@ The model is a single field in `agent/agent.ts`. To use a different gateway-rout
 import { defineAgent } from "eve";
 
 export default defineAgent({
-  model: "openai/gpt-5.6-luna", // or any gateway id
+  model: "openai/gpt-6-luna", // or any gateway id
 });
 ```
 
@@ -128,10 +140,11 @@ npm run test:integration -- greeting-no-tools  # one specific eval
 Tests cover two layers:
 
 - **Unit (vitest, `agent/__tests__/`)** — the shared GitHub client (auth header construction, error handling, pagination, 204 handling) and the non-trivial tool projections (issues PR filter, notifications subject extraction). No network.
-- **Integration (`evals/`)** — five `eve eval` cases that drive the agent end-to-end through a scripted `mockModel` (activated by `EVE_EVAL=1`):
+- **Integration (`evals/`)** — six `eve eval` cases that drive the agent end-to-end through a scripted `mockModel` (activated by `EVE_EVAL=1`):
   - `greeting-no-tools` — a greeting does not trigger any tool call.
   - `write-tool-parks-for-approval` — a create-issue request calls the write tool, which then parks for human approval. Runs without `GITHUB_TOKEN` because the tool never executes.
   - `update-repo-parks-for-approval` and `approve-pull-request-parks-for-approval` — repository updates and PR approvals park for human approval before executing.
+  - `rerun-workflow-parks-for-approval` — an Actions rerun parks before any quota-consuming request. This deterministic fixture verifies routing/approval wiring, not the live model's billing reasoning.
   - `list-repos-uses-read-tool` — a list-repos request calls `github_list_my_repos`. Skipped when `GITHUB_TOKEN` is not set; with a valid token it exercises the full read path including pagination.
 
 The unit test files live under `agent/__tests__/` (not `agent/tools/`) because the tool-slot discovery rejects any filename containing a dot, which `*.test.ts` has.

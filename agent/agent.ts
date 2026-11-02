@@ -9,6 +9,22 @@ const model = isEval
         return { text: "Aquí tienes el resultado." };
       }
       const msg = (lastUserMessage ?? "").toLowerCase().trim();
+      if (msg.includes("relanza") && msg.includes("workflow")) {
+        return {
+          text: "Voy a solicitar aprobación para reintentar la ejecución.",
+          toolCalls: [
+            {
+              name: "github_rerun_workflow",
+              input: {
+                owner: "test",
+                repo: "test",
+                run_id: 42,
+                mode: "failed_jobs",
+              },
+            },
+          ],
+        };
+      }
         if (msg.includes("actualiza") && msg.includes("repo")) {
           return {
             text: "Voy a actualizar el repositorio.",
